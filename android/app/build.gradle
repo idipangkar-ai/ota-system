@@ -52,6 +52,11 @@ react {
 
     /* Autolinking */
     autolinkLibrariesWithApp()
+    //
+    // Added by install-expo-modules
+    entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", rootDir.getAbsoluteFile().getParentFile().getAbsolutePath(), "android", "absolute"].execute(null, rootDir).text.trim())
+    cliFile = new File(["node", "--print", "require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })"].execute(null, rootDir).text.trim())
+    bundleCommand = "export:embed"
 }
 
 /**
@@ -115,5 +120,24 @@ dependencies {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
+    }
+}
+
+
+// Ensure generated files are ready before creating the release JS bundle.
+tasks.configureEach {
+    if (name == "createBundleReleaseJsAndAssets") {
+        dependsOn("generateReactNativeEntryPoint")
+        dependsOn("generateAutolinkingPackageList")
+        dependsOn("generateAutolinkingNewArchitectureFiles")
+        dependsOn("generateReleaseBuildConfig")
+        dependsOn("checkReleaseDuplicateClasses")
+        dependsOn("mergeReleaseJniLibFolders")
+        dependsOn("buildKotlinToolingMetadata")
+
+        dependsOn(tasks.matching {
+            it.name.startsWith("configureCMakeRelWithDebInfo") ||
+            it.name.startsWith("buildCMakeRelWithDebInfo")
+        })
     }
 }

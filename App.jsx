@@ -1,31 +1,16 @@
-
 import React from 'react';
-import { StatusBar } from 'react-native';
-
-import {
-  SafeAreaProvider,
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import HomeScreen from './src/screens/HomeScreen';
+import {StatusBar} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#F5F7FB"
+        backgroundColor="#F5F3EE"
       />
-
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: '#F5F7FB',
-        }}
-        edges={['top', 'bottom', 'left', 'right']}
-      >
-        <HomeScreen />
-      </SafeAreaView>
+      <AppNavigator />
     </SafeAreaProvider>
   );
 }

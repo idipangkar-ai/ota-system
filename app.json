@@ -1,4 +1,17 @@
 {
   "name": "OTA",
-  "displayName": "OTA"
+  "extra": {
+    "eas": {
+      "projectId": "64c54f2e-6246-450f-ae56-3937092ebaa3"
+    }
+  },
+  "runtimeVersion": "1.0.0",
+  "updates": {
+    "url": "https://u.expo.dev/64c54f2e-6246-450f-ae56-3937092ebaa3"
+  },
+  "android": {},
+  "ios": {},
+  "plugins": [
+    "expo-secure-store"
+  ]
 }
