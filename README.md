@@ -1,97 +1,85 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# OTA Shopping App
 
-# Getting Started
+A React Native customer shopping app foundation backed by Frappe v15. The current release establishes the authentication flow and app navigation; catalog, cart and order workflows are intentionally still placeholders.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Requirements
 
-## Step 1: Start Metro
+- Node.js 22.11 or newer
+- Android Studio and an Android emulator/device for Android development
+- macOS, Xcode and CocoaPods for iOS development
+- A reachable Frappe v15 site
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Setup
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+Install the JavaScript dependencies:
 
 ```sh
-# Using npm
+npm install
+```
+
+Set the Frappe base URL in [`src/config/frappe.js`](src/config/frappe.js). The checked-in development value is `http://127.0.0.1:8000`; use an address reachable from the device or emulator. For example, an Android emulator commonly reaches a host machine through `http://10.0.2.2:8000`. Use HTTPS for production.
+
+Start Metro:
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+Run on Android:
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+Run on iOS (macOS):
 
 ```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+cd ios
+pod install
+cd ..
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+`expo-secure-store` is used to store the Frappe session ID in the platform secure store. Rebuild the native app after installing or changing native dependencies; do not use Expo Go for this bare React Native project.
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## Authentication and navigation
 
-## Step 3: Modify your app
+- The splash screen checks for a saved session and validates it with Frappe's `frappe.auth.get_logged_user` method.
+- A missing or invalid session opens Welcome and the Login, Register or Forgot Password flow.
+- Login saves the Frappe `sid` in SecureStore. Requests attach the saved session cookie. Logout clears the local session even if the server logout request cannot complete.
+- Registration and password reset call Frappe's standard `frappe.core.doctype.user.user.sign_up` and `frappe.core.doctype.user.user.reset_password` methods. Registration availability and email delivery depend on Frappe site settings.
+- Authenticated users enter five tabs: Home, Categories, Cart, Orders and Account. Each tab keeps its own navigation stack.
+- The shopping tabs are navigation scaffolding only; product, cart and order APIs have not been added.
 
-Now that you have successfully run the app, let's make changes!
+The Frappe base URL and current-user check are in `src/config/frappe.js` and `src/domains/feed/api/feedApi.js`. Authentication requests are in `src/domains/auth/api/authApi.js`.
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Expo EAS Updates
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+The existing EAS project ID, update URL, runtime version and build channels are configured in `app.json` and `eas.json`. Keep the runtime version and project/channel settings aligned with the installed native build when publishing updates. Changes that add or change native modules require a new native build before an OTA update can use them.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+Build profiles:
 
-## Congratulations! :tada:
+| Profile | Distribution | Channel |
+| --- | --- | --- |
+| `development` | Development client, internal | `development` |
+| `preview` | Internal | `preview` |
+| `production` | Store build | `production` |
 
-You've successfully run and modified your React Native App. :partying_face:
+## Quality checks
 
-### Now what?
+```sh
+npm run lint
+npm test -- --runInBand
+```
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## Project structure
 
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```text
+src/
+  config/             Frappe URL, secure session and request helper
+  domains/
+    auth/             Login, registration, password reset and auth API
+    feed/             Current-user API and Home content
+    ota/              OTA status UI and hook
+  navigation/         Session gate, auth flow and tab stacks
+```
